@@ -727,6 +727,8 @@ minhaBicicleta.Mover(); // Saída: A bicicleta está se movendo.
 | Pode ter construtores | ✅ Sim | ❌ Não |
 | Pode ser instanciada | ❌ Não | ❌ Não |
 | Pode ter múltiplas heranças | ❌ Não | ✅ Sim |
+| Pode ser implementada por várias classes? | ⚠️ Sim, mas uma classe só pode herdar UMA classe abstrata | ✅ Sim, uma classe pode implementar várias interfaces
+| Exemplo |	abstract class Animal { public abstract void EmitirSom(); } |	interface IVeiculo { void Mover(); }
 
 ---
 
