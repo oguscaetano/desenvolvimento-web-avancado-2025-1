@@ -21,7 +21,7 @@ public class MarioController
         mario.LevarDano();
         view.MostrarStatus(mario);
 
-        if (mario.Vida <= 0)
+        if (mario.Vidas <= 0)
         {
             view.MostrarGameOver();
         }
