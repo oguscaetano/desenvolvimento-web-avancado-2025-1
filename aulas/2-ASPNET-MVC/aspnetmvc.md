@@ -276,7 +276,7 @@ Criamos um método `AdicionarProduto()` para adicionar produtos à lista via req
 1. **GET** → `https://localhost:porta/api/produtos`
 2. **POST** → Envie este JSON:
 
-```json
+```sh
 POST http://localhost:porta/api/produtos
 content-type: application/json
 
