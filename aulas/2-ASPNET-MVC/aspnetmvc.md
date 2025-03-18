@@ -142,12 +142,12 @@ namespace MeuProjetoAPI.Controllers // Define o namespace onde esse controller e
             {
                 new {
                     Id = 1,
-                    Name = "Notebook",
+                    Nome = "Notebook",
                     Preco = 5000,
                 },
                 new {
                     Id = 2,
-                    Name = "Mouse",
+                    Nome = "Mouse",
                     Preco = 100,
                 },
             };
