@@ -5,6 +5,7 @@ No **universo de Dragon Ball**, imagine que o **banco de dados** seja a **Grande
 Cada **personagem** (objeto) tem **atributos** como **nome, nível de poder e raça**. O ORM permite que a gente manipule essas informações sem precisar escrever SQL puro.
 
 ### 💻 Exemplo: Criando uma classe `Personagem`
+
 ```csharp
 public class Personagem
 {
@@ -14,7 +15,8 @@ public class Personagem
     public int NivelPoder { get; set; }
 }
 ```
->**Essa classe representa a tabela de personagens no banco de dados!**  
+
+>💡**Essa classe representa a tabela de personagens no banco de dados!**  
 
 # Introdução ao Entity Framework Core
 
@@ -22,29 +24,51 @@ O **Entity Framework Core (EF Core)** é um ORM para .NET que permite interagir 
 Ele traduz operações em **C#** para comandos **SQL** automaticamente.
 Assim como o **Goku** precisa do **Ki** para soltar um Kamehameha, o **EF Core** precisa de um **banco de dados** para armazenar os dados.
 
-Para instalar o **Entity Framework Core** no seu projeto **.NET Core**, siga estes passos:  
+Para criar um projeto Web API com o **Entity Framework Core**, siga estes passos:  
 
-### 1️⃣ Instalar o pacote principal do EF Core
+### 1 - Criar um projeto `webapi` usando ``controllers`
 
 ```sh
-dotnet add package Microsoft.EntityFrameworkCore
+dotnet new webapi --use-controllers -o ProjetoDBZ
 ```
 
-### 2️⃣ Instalar o provedor de banco de dados
+### 2 - Instalar o pacote principal do `EF Core` na versão 7.0.7
 
 ```sh
-dotnet add package Pomelo.EntityFrameworkCore.MySql
+dotnet add package Microsoft.EntityFrameworkCore --version 7.0.7
 ```
 
-### 3️⃣ Instalar o Entity Framework Core Tools
+### 3 - Instalar o pacote `EF Core Tools` na versão 7.0.7
 
 ```sh
-dotnet add package Microsoft.EntityFrameworkCore.Tools
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 7.0.7
+```
+
+### 4 - Instalar o provedor de banco de dados `MySQL` na versão 7.0.0
+
+```sh
+dotnet add package Pomelo.EntityFrameworkCore.MySql --version 7.0.0
 ```
 
 >Com isso, você pode rodar comandos do EF Core como **migrations** e **database update**.
 
-### 💻 Criando o `DbContext`
+### 5 - Crie um `Model`
+
+> ➡️ Crie uma pasta chamada `Models` e dentro dela um arquivo chamado `Personagem.cs`
+
+```csharp
+namespace ProjetoDBZ.Models
+{
+    public class Personagem
+    {
+        public int Id { get; set; }
+        public string? Nome { get; set; }
+        public string? Tipo { get; set; }
+    }
+}
+```
+
+### 6 - 🎲 Criando o `DbContext`
 
 O **`DbContext`** é a **classe principal do Entity Framework Core**. Ele atua como uma **ponte** entre a aplicação e o banco de dados, permitindo que você consulte, insira, atualize e exclua dados de forma fácil e eficiente (CRUD da alegria 😀).  
 
@@ -57,136 +81,226 @@ Ele rastreia todas as entidades (objetos) e sabe quando **salvar mudanças** ou 
 3. **Realizar operações CRUD (Create, Read, Update, Delete)**  
 4. **Rastrear mudanças nos objetos para atualizar o banco automaticamente**  
 
-Exemplo:
+> ➡️ Crie uma pasta chamada `Data` e dentro dela um arquivo chamado `AppDbContext.cs`
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Importa a biblioteca do Entity Framework Core, que permite trabalhar com banco de dados de forma orientada a objetos.
+using ProjetoDBZ.Models; // Importa o namespace onde está definida a classe Personagem.
 
-public class DragonBallContext : DbContext
+namespace ProjetoDBZ.Data // Define um namespace chamado ProjetoDBZ.Data para organizar o código.
 {
-    public DbSet<Personagem> Personagens { get; set; } // Tabela Personagens
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    // Definição da classe AppDbContext que herda de DbContext, a classe base do Entity Framework para acessar o banco de dados.
+    public class AppDbContext : DbContext
     {
-        optionsBuilder.UseMySQL("server=localhost;database=DragonBallZ;user=root;password=senha");
+        // Construtor da classe AppDbContext que recebe um objeto do tipo DbContextOptions.
+        // Esse objeto contém as configurações do banco de dados e é passado para a classe base (DbContext).
+        public AppDbContext(DbContextOptions options) : base(options) {}
+
+        // Propriedade do tipo DbSet<Personagem>, que representa a tabela "Personagens" no banco de dados.
+        // O DbSet permite realizar operações como inserção, consulta, atualização e remoção de registros.
+        public DbSet<Personagem> Personagens { get; set; }
     }
 }
 ```
-➡️ **Agora, o EF Core sabe onde armazenar os personagens no banco de dados MySQL!**
 
----
+>Agora, o EF Core sabe onde armazenar os personagens no banco de dados MySQL!
 
-## **🟢 Aula 3: Conectando ao MySQL**
-### **📌 Instalando os pacotes necessários**
-Antes de conectar ao **MySQL**, precisamos instalar o **Entity Framework Core** e o **provider do MySQL**:
-```sh
-dotnet add package Microsoft.EntityFrameworkCore
-dotnet add package Pomelo.EntityFrameworkCore.MySql
+### 7 - Criando o `Controller`
+
+> ➡️ Dentro da pasta `Controllers` crie um API Controller chamado `PersonagensControllers.cs`
+
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using ProjetoDBZ.Data;
+
+namespace ProjetoDBZ.Controllers
+{
+    [ApiController] // Indica que esta classe é um controlador de API.
+    [Route("api/[controller]")] // Define a rota base para as requisições HTTP. O "[controller]" será substituído pelo nome da classe sem o sufixo "Controller".
+    public class PersonagensController : ControllerBase 
+    {
+        private readonly AppDbContext _appDbContext; // Declaração de uma variável para acessar o banco de dados.
+
+        // Construtor que recebe uma instância de AppDbContext por injeção de dependência.
+        public PersonagensController(AppDbContext appDbContext)
+        {
+            _appDbContext = appDbContext;
+        }
+    }
+}
 ```
 
-### **📌 Criando e aplicando a migração**
-Agora, vamos **criar o banco de dados** com o comando:
+Após fazer todos os passos anteriores, faça um `build` para verificar se está tudo certo.
+
 ```sh
-dotnet ef migrations add CriarBanco
+dotnet build
+```
+
+### 8 - Criação da conexão do banco de dados no arquivo `appsettings.json`
+
+```json
+// {
+//   "Logging": {
+//     "LogLevel": {
+//       "Default": "Information",
+//       "Microsoft.AspNetCore": "Warning"
+//     }
+//   },
+//   "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "AppDbConnectionString": "server=localhost; database=Personagens; User=root; Password=123456;"
+  }
+// }
+```
+
+### 9 - Preparação do arquivo `Program.cs`
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using ProjetoDBZ.Data;
+// var builder = WebApplication.CreateBuilder(args);
+
+// // Add services to the container.
+
+// builder.Services.AddControllers();
+// // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen();
+
+var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// var app = builder.Build();
+
+// // Configure the HTTP request pipeline.
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+
+// app.UseHttpsRedirection();
+
+// app.UseAuthorization();
+
+// app.MapControllers();
+
+// app.Run();
+```
+
+Esse código configura a **conexão com o banco de dados MySQL** no ASP.NET Core usando **Entity Framework Core (EF Core)**.
+
+Faça um `build` para verificar se está tudo certo.
+
+```sh
+dotnet build
+```
+
+**Explicação:**
+
+#### Obtendo a string de conexão
+```csharp
+var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
+```
+📌 **O que faz?**  
+- Obtém a string de conexão do banco de dados definida no arquivo **appsettings.json**.  
+- `"AppDbConnectionString"` é a **chave** que identifica a conexão no arquivo de configuração.
+
+#### Configurando o `AppDbContext`
+```csharp
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
+```
+📌 **O que faz?**  
+- Registra o **contexto do banco de dados (`AppDbContext`)** no contêiner de **Injeção de Dependência (DI)** do ASP.NET Core.  
+- `UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))` configura o **MySQL como banco de dados**.
+
+📌 **Explicação detalhada**:
+- `options.UseMySql(...)` → Especifica que será usado o MySQL.
+- `connectionString` → Define qual banco será conectado.
+- `ServerVersion.AutoDetect(connectionString)` → Permite que o EF Core detecte automaticamente a versão do MySQL.
+
+#### Por que usar Injeção de Dependência (DI)?
+No ASP.NET Core, o `AppDbContext` é **gerenciado automaticamente** pelo framework, evitando problemas como:
+✔️ Código mais organizado.  
+✔️ Facilidade para **trocar de banco de dados** no futuro.  
+✔️ Melhor gerenciamento de conexões.
+
+### 10 - Fazer a migração do banco
+
+Agora precisamos fazer a migração do nosso banco de dados.
+
+```sh
+dotnet ef migrations add Inicial
+```
+
+>Será criado uma pasta chamada `Migrations` na raiz do projeto.
+
+### 11 - Fazer a atualização do banco `(update)`
+
+```sh
 dotnet ef database update
 ```
-➡️ **O MySQL agora tem a tabela `Personagens` criada!**
 
----
+### 12 - Verificar o `MySQL Workbench`
 
-## **🟢 Aula 4: Validações com Data Annotations**
-### **📌 O que são Data Annotations?**
-- São **anotações** usadas para definir regras e restrições nas classes do Entity Framework Core.
-- Imagine que o **Mestre Kame** só aceita treinar **lutadores que tenham nome e nível de poder maior que 1000**. Podemos aplicar isso na classe `Personagem`!
+Se tudo deu certo, terá sido criado um schema no Workbench.
 
-### **💻 Aplicando validações**
+![banco](./banco.png)
+
+### 13 - Adicionar o método `POST` no Controller
+
 ```csharp
-using System.ComponentModel.DataAnnotations;
+// using Microsoft.AspNetCore.Mvc;
+// using ProjetoDBZ.Data;
+using ProjetoDBZ.Models;
 
-public class Personagem
+// namespace ProjetoDBZ.Controllers // Define o namespace para organizar o código do controlador.
+// {
+//     [ApiController] // Indica que esta classe é um controlador de API.
+//     [Route("api/[controller]")] // Define a rota base para as requisições HTTP. O "[controller]" será substituído pelo nome da classe sem o sufixo "Controller".
+//     public class PersonagensController : ControllerBase 
+//     {
+//         private readonly AppDbContext _appDbContext; // Declaração de uma variável para acessar o banco de dados.
+
+//         // Construtor que recebe uma instância de AppDbContext por injeção de dependência.
+//         public PersonagensController(AppDbContext appDbContext)
+//         {
+//             _appDbContext = appDbContext;
+//         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPersonagem(Personagem personagem)
+        {
+            _appDbContext.Personagens.Add(personagem);
+            await _appDbContext.SaveChangesAsync();
+
+            return Ok(personagem);
+        }
+//     }
+// }
+```
+
+### 14 - Criar um personagem
+
+Faça uma requisição ao endpoint para criação de um novo personagem. Exemplo:
+
+```json
 {
-    public int Id { get; set; }
-
-    [Required(ErrorMessage = "Nome é obrigatório")]
-    public string Nome { get; set; }
-
-    [Required]
-    [Range(1000, 1000000, ErrorMessage = "O nível de poder deve ser maior que 1000")]
-    public int NivelPoder { get; set; }
+  "id": 1,
+  "nome": "Goku",
+  "tipo": "Sayajin"
 }
 ```
-➡️ **Agora, se tentarmos criar um personagem sem nome ou com nível de poder abaixo de 1000, teremos um erro!**
 
----
+Abra o Workbench e verifique se o mesmo foi criado na tabela `personagens`.
 
-## **🟢 Aula 5: Trabalhando com Collections**
-### **📌 O que são Collections?**
-- São **estruturas de dados** para armazenar múltiplos objetos em **listas**.
-- Exemplo: **A equipe dos Guerreiros Z** é uma **Collection** de personagens.
-
-### **💻 Exemplo de Collection**
-```csharp
-List<Personagem> guerreirosZ = new List<Personagem>
-{
-    new Personagem { Id = 1, Nome = "Goku", Raca = "Saiyajin", NivelPoder = 9001 },
-    new Personagem { Id = 2, Nome = "Vegeta", Raca = "Saiyajin", NivelPoder = 8500 },
-    new Personagem { Id = 3, Nome = "Piccolo", Raca = "Namekuseijin", NivelPoder = 7000 }
-};
-
-foreach (var personagem in guerreirosZ)
-{
-    Console.WriteLine($"{personagem.Nome} tem nível de poder {personagem.NivelPoder}");
-}
+```sql
+SELECT * FROM personagens.personagens;
 ```
-➡️ **Criamos uma lista de personagens e exibimos os detalhes deles!**
 
----
+O resultado será esse:
 
-## **🟢 Aula 6: Consultando Dados com LINQ**
-### **📌 O que é LINQ?**
-- **LINQ (Language Integrated Query)** permite fazer consultas em listas e bancos de dados usando C#.
-- Exemplo: Goku quer **encontrar todos os Saiyajins** para formar um time!
-
-### **💻 Exemplo de consulta LINQ**
-```csharp
-var saiyajins = guerreirosZ.Where(p => p.Raca == "Saiyajin").ToList();
-
-Console.WriteLine("Saiyajins encontrados:");
-foreach (var s in saiyajins)
-{
-    Console.WriteLine(s.Nome);
-}
-```
-➡️ **Agora conseguimos filtrar os personagens que são Saiyajins!**
-
----
-
-## **🟢 Aula 7: Expressões Lambda**
-### **📌 O que são Expressões Lambda?**
-- São funções anônimas que podem ser usadas para simplificar consultas.
-- Lembra do **Instinto Superior** do Goku? Ele age rápido sem precisar pensar! Lambda faz a mesma coisa no código.
-
-### **💻 Exemplo de Lambda**
-```csharp
-var maisForte = guerreirosZ.OrderByDescending(p => p.NivelPoder).First();
-
-Console.WriteLine($"O personagem mais forte é: {maisForte.Nome} com nível de poder {maisForte.NivelPoder}");
-```
-➡️ **Ordenamos os personagens por nível de poder e pegamos o mais forte!**
-
----
-
-## **🟢 Conclusão**
-- **Usamos ORM** para mapear objetos no banco de dados.
-- **Configuramos o Entity Framework Core** para conectar ao MySQL.
-- **Aplicamos validações** com Data Annotations.
-- **Criamos collections** para armazenar os personagens.
-- **Utilizamos LINQ** para consultar dados.
-- **Aplicamos expressões Lambda** para consultas rápidas.
-
-### **🛠 Exercício Prático**
-➡️ **Crie um CRUD completo para personagens do Dragon Ball no MySQL, incluindo GET, POST, PUT e DELETE!**  
-
----
-
-### **🔥 E aí, pronto para treinar com os Guerreiros Z no mundo da programação? 🚀🔥**
+![select](./select.png)
