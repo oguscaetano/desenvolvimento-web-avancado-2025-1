@@ -274,10 +274,14 @@ using ProjetoDBZ.Models;
         [HttpPost]
         public async Task<IActionResult> AddPersonagem(Personagem personagem)
         {
+            if (personagem == null) {
+                return BadRequest("Dados inválidos.");
+            }
+
             _appDbContext.Personagens.Add(personagem);
             await _appDbContext.SaveChangesAsync();
 
-            return Ok(personagem);
+            return StatusCode(201, personagem);
         }
 //     }
 // }
