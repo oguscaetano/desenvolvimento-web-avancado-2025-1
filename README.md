@@ -1,7 +1,8 @@
 # DESENVOLVIMENTO WEB AVANÇADO 2025-1
 
 Materiais complementares:
-- [VÍDEO - COMO FAZER UMA API COM C# .NET, EF CORE E MYSQL](https://youtu.be/iUAMr_ZF4qQ)
+- [PARTE 1 - COMO FAZER UMA API COM C# .NET, EF CORE E MYSQL](https://youtu.be/iUAMr_ZF4qQ)
+- [PARTE 2 - COMO FAZER UMA API COM C# .NET, EF CORE E MYSQL](https://youtu.be/fRejrHqKxZg)
 
 ## 📕 Ementa
 
